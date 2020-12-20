@@ -6,7 +6,7 @@
   (routes
     (GET "/" [:as req]
       {:status 200
-      :header {"Content-Type" "text/html"}
+      :headers {"Content-Type" "text/html"}
       :body "<h1>HELLO WORLD APP</h1>"})))
 
 (defn handler [req]
