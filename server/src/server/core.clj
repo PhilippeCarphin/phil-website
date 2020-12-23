@@ -17,7 +17,32 @@
                   HTML like this."]
                   [:p "This is a second paragraph"]
                   [:h2 "This is an h2"]
-                  [:p "This is a <p> tag in that h2 section"]]])})))
+                  [:p "This is a <p> tag in that h2 section"]]])})
+    (GET "/other" [:as req]
+      {:status 200
+      :headers {"Content-Type", "text/html"}
+      :body (html
+              [:html
+                [:head [:title "Other Route"]]
+                [:body
+                  [:h1 "Other ROUTE!"]]])})
+    (GET "/extern" [:as req]
+      {:status 200
+      :headers {"Content-Type", "text/html"}
+      :body (load-file "src/server/today.clj")}
+      )
+    (GET "/sidebar" [:as req]
+      {:status 200
+      :headers {"Content-Type", "text/html"}
+      :body (load-file "src/server/sidebar.clj")}
+      )
+    (GET "/src/server/style.css" [:as req]
+      {:status 200
+      :headers {"Content-Type", "text/css"}
+      :body (slurp "src/server/style.css")})))
+
+(defn get-file [file] 
+  ())
 
 (defn create-server [] 
   (s/run-server (app) {:port 8081}))
