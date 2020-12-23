@@ -41,16 +41,18 @@
       {:status 200
       :headers {"Content-Type", "text/css"}
       :body (slurp "src/server/style.css")})
-
-    (GET "/normal" [:as req]
+    (GET ["/parsing/:name.:suffix" :name #".*", :suffix #".*"] [name suffix]
       {:status 200
       :headers {"Content-Type", "text/html"}
-      :body (slurp "src/server/normal.html")}
-      )
+      :body (html [:html
+                    [:head [:title "Parsing"]]
+                    [:body
+                      [:h1 "Hash"]
+                      [:h2 "Name : " name]
+                      [:h2 "Suffix : " suffix]]])})
     (GET "/resources/:file" [file] 
       {:status 200
       :body (slurp (str "resources/" file))})
-      
       ))
 
 (defn get-file [file] 
