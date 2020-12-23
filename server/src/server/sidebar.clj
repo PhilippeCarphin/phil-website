@@ -4,13 +4,11 @@
   [:html
     [:head 
       [:title "TODAY"]
-      [:link {:rel "stylesheet" :href "src/server/style.css"}]]
+      [:link {:rel "stylesheet" :href "resources/style.css"}]]
     [:body 
       [:div {:class "sidebar"}
         [:a {:class "active" :href "#home"} "Home"]
         [:a {:href "#news"} "News"]
         [:a {:href "#contact"} "Contact"]
         [:a {:href "#about"} "About"]]
-      [:div {:class "content"} "CONTENT"]
-
-      ]])
+      [:div {:class "content"} "CONTENT"]]])

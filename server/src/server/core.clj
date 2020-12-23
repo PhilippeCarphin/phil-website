@@ -1,6 +1,7 @@
 (ns server.core
   (:require [org.httpkit.server :as s]
-            [compojure.core :refer [routes POST GET ANY]]))
+            [compojure.core :refer [routes POST GET ANY]]
+            [compojure.route :as route]))
 (use 'hiccup.core)
 (defn app []
   (routes
@@ -39,7 +40,18 @@
     (GET "/src/server/style.css" [:as req]
       {:status 200
       :headers {"Content-Type", "text/css"}
-      :body (slurp "src/server/style.css")})))
+      :body (slurp "src/server/style.css")})
+
+    (GET "/normal" [:as req]
+      {:status 200
+      :headers {"Content-Type", "text/html"}
+      :body (slurp "src/server/normal.html")}
+      )
+    (GET "/resources/:file" [file] 
+      {:status 200
+      :body (slurp (str "resources/" file))})
+      
+      ))
 
 (defn get-file [file] 
   ())
