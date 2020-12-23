@@ -5,5 +5,6 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [http-kit "2.2.0"]
-                 [compojure "1.6.0"]]
+                 [compojure "1.6.0"]
+                 [hiccup "1.0.5"]]
   :repl-options {:init-ns server.core})
