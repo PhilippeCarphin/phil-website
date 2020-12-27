@@ -5,58 +5,18 @@
 (use 'hiccup.core)
 (defn app []
   (routes
-    (GET "/" [:as req]
-      {:status 200
-      :headers {"Content-Type" "text/html"}
-      :body (html
-              [:html
-                [:head [:title "Hiccup test"]]
-                [:body 
-                  [:h1 "This is an h1"]
-                  [:p "I like how this permits me to express HTML as a Clojure data structure.
-                  Indeed, doing this was easier than I thought and I thing I might like writing simple
-                  HTML like this."]
-                  [:p "This is a second paragraph"]
-                  [:h2 "This is an h2"]
-                  [:p "This is a <p> tag in that h2 section"]]])})
-    (GET "/other" [:as req]
-      {:status 200
-      :headers {"Content-Type", "text/html"}
-      :body (html
-              [:html
-                [:head [:title "Other Route"]]
-                [:body
-                  [:h1 "Other ROUTE!"]]])})
-    (GET "/extern" [:as req]
-      {:status 200
-      :headers {"Content-Type", "text/html"}
-      :body (load-file "src/server/today.clj")}
-      )
-    (GET "/sidebar" [:as req]
-      {:status 200
-      :headers {"Content-Type", "text/html"}
-      :body (load-file "src/server/sidebar.clj")}
-      )
-    (GET "/src/server/style.css" [:as req]
-      {:status 200
-      :headers {"Content-Type", "text/css"}
-      :body (slurp "src/server/style.css")})
-    (GET ["/parsing/:name.:suffix" :name #".*", :suffix #".*"] [name suffix]
-      {:status 200
-      :headers {"Content-Type", "text/html"}
-      :body (html [:html
-                    [:head [:title "Parsing"]]
-                    [:body
-                      [:h1 "Hash"]
-                      [:h2 "Name : " name]
-                      [:h2 "Suffix : " suffix]]])})
     (GET "/resources/:file" [file] 
       {:status 200
       :body (slurp (str "resources/" file))})
-      ))
-
-(defn get-file [file] 
-  ())
+    (GET "/clojure/:file" [file] 
+      {:status 200
+      :headers {"Content-Type" "text/html"}
+      :body (load-file (str "clojure/" file))})
+    (GET "/org/:file" [file]
+      {:status 200
+       :headers {"Content-Type" "text/html"}
+       :body (slurp (str "org/" file))})
+    ))
 
 (defn create-server [] 
   (s/run-server (app) {:port 8081}))

@@ -1,0 +1,33 @@
+#+TITLE: Main org mode file for Phil's website
+
+* Org mode content
+
+This is to demonstrate how I can create some content with org mode.  I think
+this will be the easiest way to write fixed style content.
+
+Plus the ox-twbs gives a really nice sidebar that you can click.
+
+** Code
+
+The main reason why I want to use org mode is because of how easy it makes the
+presentation of code of various languages.
+
+#+BEGIN_SRC go
+func main () {
+    fmt.Println("Hello world!")
+}
+#+END_SRC
+
+** Organisation
+
+For writing, org mode is the best.  The easy to use tree collapsing features
+make structuring a document in a clear way very easy.
+
+** ox-twbs
+
+I really like ox-twbs.  It makes really nice looking HTML and I don't have to
+commit to it since my content is kept in a source form that can be exported to
+anything else.
+
+In the future, I might like to write my own code to take an org-mode document
+and render it to HTML.
