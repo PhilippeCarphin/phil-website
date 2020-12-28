@@ -1,0 +1,275 @@
+#+TITLE: Code repetition
+
+* Code Repetition
+
+
+In chess, when we say that you should always castle early, it is understood that
+if you have an opportunity to checkmate your opponent you should break the early
+castling "rule".
+
+In programming, we are taught DRY (don't repeat yourself).  This is indeed a
+good principle.
+
+However it is interesting to see that sometimes, we should take it easy with
+DRY.
+
+There are situations where being over-zealous about DRY can be
+counter-productive.
+
+** Repetition mirage
+
+Consider a simple makefile project like this one:
+
+#+BEGIN_SRC make
+SRC=$(wildcard *.c)
+$(TRG):$(SRC)
+    gcc $< -o $@ -I . -L . -l mylib
+#+END_SRC
+
+When I showed students how I structure makefiles with variables like so:
+
+#+BEGIN_SRC make
+SRC_DIR = .
+INC_DIR = .
+LIB_DIR = .
+SRC=$(wildcard $(SRC_DIR)/*.c)
+$(TRG):$(SRC)
+    gcc $< -o $@ -I $(INC_DIR) -L $(LIB_DIR) -l mylib
+#+END_SRC
+
+the repetition would inevitably catch some students attention.
+
+I would explain that these are three different variables that happen to have the
+same value now but that could have different values later.
+
+This seems to indicate that we are doing this because we intend to restructure
+our project but even if we don't, the variables let us write this line
+
+#+BEGIN_SRC make
+    gcc $< -o $@ -I $(INC_DIR) -L $(LIB_DIR) -l mylib
+#+END_SRC
+
+So I like having the variables even if I have no intention of separating my
+files into different directories.
+
+But the main point is that in this case, I consider the three variables to not
+be repetition but actually a repetition mirage due to different variables
+coincidentally havint the same value.
+
+And the other point is that code repetition is not something that can be removed
+without some analysis.
+
+
+** Raymond Hettinger
+
+Another problem with overzealous repetition removal is that you may factor out
+the wrong behavior.
+
+Raymond Hettinger has a nice talk where he demonstrates solving a problem and
+letting the patterns emerge from the repetition and refactoring only after
+having repeated himself at least two or three times.
+
+He repeats himself a couple times by writing three functions that are basically
+all the same except for some small variations.  After the third one, the pattern
+emerges, he factors out the common parts.
+
+He then talks about how if we had wanted to avoid repetition from the start, we
+might have coded the common part before the three functions and this could have
+led us write a worse solution to the problem.
+
+The idea is that the way Raymond advocates is good because you let the problem
+tell you how it wants to be factored.
+
+** Higher purpose
+
+We should not forget why we do DRY.  It is a means to an end, or actually, to
+many ends.
+
+When we factor out common behavior, we have only one part in the code to modify
+that behavior.
+
+But we don't need repetition to factor things out.  We may break a function into
+subroutines even if the subroutines we create are called only by that function.
+
+We don't do it to avoid repetition.
+
+Here are some examples where I repeated myself and thought "oh here's a cool
+example of where repetition makes for better code (of course in my humble
+opinion).
+
+We have the gitlab-runner, to which we added functionnality: it has "executors"
+which are classes that handle the running of jobs: Docker, SSH, Shell, etc.
+
+We created an executor based on the Shell executor.  The Run() function is of
+the executor is used to perform various tasks for every CI job.
+
+What ours does differently is that when the task is "Running what the user has
+in their .gitlab-ci.yml file", then it does something special otherwise it does
+the same thing as what the shell.
+
+#+BEGIN_SRC go
+func (s *executor) Run(cmd common.ExecutorCommand) error {
+
+    c := exec.Command(s.BuildShell.Command, s.BuildShell.Arguments...)
+    if c == nil {
+        return errors.New("Failed to generate execution command")
+    }
+
+    helpers.SetProcessGroup(c)
+    defer helpers.KillProcessGroup(c)
+
+    // Fill process environment variables
+    c.Env = append(os.Environ(), s.BuildShell.Environment...)
+    c.Stdout = s.BuildTrace
+    c.Stderr = s.BuildTrace
+
+    if s.BuildShell.PassFile {
+        scriptDir, err := ioutil.TempDir("", "build_script")
+        if err != nil {
+            return err
+        }
+        defer os.RemoveAll(scriptDir)
+
+        scriptFile := filepath.Join(scriptDir, "script."+s.BuildShell.Extension)
+        err = ioutil.WriteFile(scriptFile, []byte(cmd.Script), 0700)
+        if err != nil {
+            return err
+        }
+
+        c.Args = append(c.Args, scriptFile)
+    } else {
+        c.Stdin = bytes.NewBufferString(cmd.Script)
+    }
+
+    // Start a process
+    err := c.Start()
+    if err != nil {
+        return fmt.Errorf("Failed to start process: %s", err)
+    }
+
+    // Wait for process to finish
+    waitCh := make(chan error)
+    go func() {
+        err := c.Wait()
+        if _, ok := err.(*exec.ExitError); ok {
+            err = &common.BuildError{Inner: err}
+        }
+        waitCh <- err
+    }()
+
+    // Support process abort
+    select {
+    case err = <-waitCh:
+        return err
+
+    case <-cmd.Abort:
+        return s.killAndWait(c, waitCh)
+    }
+}
+#+END_SRC
+
+What the function does is irrelevant.  Here is how I changed the behavior when
+we are running the user's job:
+
+#+BEGIN_SRC go
+func (s *executor) Run(cmd common.ExecutorCommand) error {
+    // Intercept the stage where we run the user's script and run it with jobrun
+    // (i.e. submit it as a job on the cluster using resources defined in .giltab-ci.yml)
+    if s.Build.CurrentStage == common.BuildStageUserScript {
+        fmt.Println("INTERCEPTION OF USER SCRIPT AND USING JOBRUN")
+        return s.runWithJobrun(cmd)
+    }
+    # Rest of function
+}
+#+END_SRC
+
+And here is where we find the repetition: the implementation of runWithJobrun is
+painfully similar to the code of the "normal" part.
+
+#+BEGIN_SRC go
+func (s *executor) runWithJobrun(cmd common.ExecutorCommand) error {
+    fmt.Println("Using Jobrun for this stage")
+
+    wd, _ := os.Getwd()
+    jgr := s.getArguments()
+    c, err := job.NewJgenJob(cmd.Script, *jgr, wd)
+    if err != nil {
+        return err
+    }
+    logrus.Infof("Jobrun executor saving files in '%s'", c.Files.Dir)
+    // Don't remove tempfiles until I know everything works
+    // defer os.RemoveAll(c.Files.Dir)
+
+    if c == nil {
+        return errors.New("Failed to generate execution command")
+    }
+
+    c.Stdout = s.BuildTrace
+    c.Stderr = s.BuildTrace
+    s.BuildLogger.Infoln(fmt.Sprintf("Submitting job with resources :\n%+v", c.Resources))
+    c.Start()
+    s.BuildLogger.Infoln("job.Start() -> " + c.Jobid)
+
+    // Wait for process to finish
+    waitCh := make(chan error)
+    go func() {
+        c.Wait()
+        waitCh <- err
+    }()
+
+    // Support process abort
+    select {
+    case err := <-waitCh:
+        return err
+    case <-cmd.Abort:
+        s.BuildLogger.Infoln(fmt.Sprintf("Abort requested : Deleting job '%s' with jobdel", c.Jobid))
+        c.Delete()
+        s.BuildLogger.Infoln(fmt.Sprintf("Jobdel command executed, waiting for job to stop"))
+        err := <-waitCh
+        return err
+    }
+}
+#+END_SRC
+
+But my reason for doing it this way is that I wanted the diff of the commit to
+show as clearely as possible : "This is identical to the shell executor except
+that the run function does something special for the user script part".
+
+
+Then other reason is that I ended up modifying parts of the =runWithJobrun()=
+and I didn't want to modify the corresponding part of the other function.
+
+I had originally desigend my object =job.JgenJob= so that its interface would
+work with how the runner was using the =exec.Command=.  I wanted to have this
+
+#+BEGIN_SRC go
+func (s *executor) Run(cmd common.ExecutorCommand) error {
+    if s.Build.CurrentStage == common.BuildStageUserScript {
+        c := job.NewJgenJob(cmd.Script, *jgr, wd)
+    } else {
+        c := exec.Command(s.BuildShell.Command, s.BuildShell.Arguments...)
+    }
+    // Everything else the same
+}
+#+END_SRC
+but because of the type system, that didn't work so I went with the other
+option.
+
+I'm glad I did because the =runWithJobrun()= function evolved separately from
+the =Run()= function.  I changed how the runner waits for the job, added some
+logging of the jobid and the status of the job, added special logging for when
+the job is canceled.
+
+Now looking at the two functions, it's clear that if we wanted to merge them
+into a single function, there would be a tedious amount of if statements.
+
+I weighed the pros and cons of this situation, there was repetition as a con,
+but there were so many pros that the choice was obvious.
+
+Nowadays, I don't really expend much effort trying to not repeat myself.
+
+This is for two reasons
+- I know many ways of not repeating myself so I don't really have to try, I
+  naturally don't repeat myself
+- Not repeating oneself is only a means to an end and in the presence of
+  competing influences, readability and nice diffs win out.
