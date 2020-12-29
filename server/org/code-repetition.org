@@ -10,7 +10,7 @@ castling "rule".
 In programming, we are taught DRY (don't repeat yourself).  This is indeed a
 good principle.
 
-However it is interesting to see that sometimes, we should take it easy with
+However, it is interesting to see that sometimes, we should take it easy with
 DRY.
 
 There are situations where being over-zealous about DRY can be
