@@ -54,7 +54,7 @@ files into different directories.
 
 But the main point is that in this case, I consider the three variables to not
 be repetition but actually a repetition mirage due to different variables
-coincidentally havint the same value.
+coincidentally having the same value.
 
 And the other point is that code repetition is not something that can be removed
 without some analysis.
