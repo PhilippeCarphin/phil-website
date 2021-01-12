@@ -2,6 +2,6 @@
 
 * Index
 
-[[./code_repetition.html][Code Repetition]]
+[[./code-repetition.html][Code Repetition]]
 
 [[../clojure/sidebar.clj][Over Automation]]
