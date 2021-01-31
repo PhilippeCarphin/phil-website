@@ -5,3 +5,7 @@
 [[./code-repetition.html][Code Repetition]]
 
 [[../clojure/sidebar.clj][Over Automation]]
+
+[[https://philippe-carphin.ca/list/Users/pcarphin/go/src/gitlab.science.gc.ca/phc001/gomaestroOLD/mockfiles/dot-suites][Webflow list]]
+
+
