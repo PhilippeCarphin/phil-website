@@ -16,6 +16,10 @@
       {:status 200
        :headers {"Content-Type" "text/html"}
        :body (slurp (str "org/" file))})
+    (GET "/" [file]
+      {:status 200
+       :headers {"Content-Type" "text/html"}
+       :body (slurp "org/index.html")})
     ))
 
 (defn create-server [] 
