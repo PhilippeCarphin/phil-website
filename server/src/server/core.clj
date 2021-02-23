@@ -5,10 +5,8 @@
 (use 'hiccup.core)
 (defn app []
   (routes
-    (GET "/resources/:file" [file] 
-      {:status 200
-      :body (slurp (str "resources/" file))})
-    (GET "/clojure/:file" [file] 
+    (route/resources "/resources/")
+    (GET "/clojure/:file" [file]
       {:status 200
       :headers {"Content-Type" "text/html"}
       :body (load-file (str "clojure/" file))})
