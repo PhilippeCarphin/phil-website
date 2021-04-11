@@ -1,0 +1,44 @@
+#+TITLE: Go With The Flow
+
+* Go with the flow
+
+Tools often have a way in which they want us to use them.
+
+In LaTeX, the first time you try to make a figure, you may have been surprised
+that it didn't show up where you thought it would in the rendered document.
+
+You have two options here, one is to understand why figures are put where they
+are and be glad for that.  The other option is to search for ways to make the
+figure show up exactly where you want it to show up.
+
+There are situations where it makes sense to force the position of a figure but
+the point here is observe that in LaTeX, things work a certain way and to work
+within the system.
+
+** Needing to go against the flow is an indication of deeper problems
+
+If you have to do some hardcore jerry-rigging to get a library to do what you
+want, maybe that's a sing that you're missing something about how that library
+works.
+
+If you have to write weird macros to avoid code duplication, maybe you're
+missing a different more appropriate mechanism for code reuse.
+
+Example: The test macros in SPOOKI.  At the start, when the tests were CPP
+tests, they used macros to do the first part and last part of each test
+resulting in a set of macros that were completely nutter-butters.
+
+The reason for macros was that the code duplication contained declarations of
+variables.  Using macros means that the macro can declare variables that the
+particular part can use.
+
+The problem is that it uses macros, the solution is to use the test fixture
+mechanism of boost unit test.
+
+** There must be a better way
+
+Raymond Hettinger's catch phrase.
+
+Always look for a better way.  You have to get annoyed by seeing something that
+is done on two lines that feels like it could be done in one (excluding clever
+and inscrutable oneliners).
