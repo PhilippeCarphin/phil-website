@@ -20,7 +20,7 @@
        :body (slurp "org/index.html")})
     ))
 
-(defn create-server [] 
+(defn -main [] 
   (s/run-server (app) {:port 8081}))
 
 (defn stop-server [server]
