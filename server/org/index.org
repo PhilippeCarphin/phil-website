@@ -2,11 +2,11 @@
 
 * Index
 
-[[https:/org/code-repetition.html][Code Repetition]]
+[[./org/code-repetition.html][Code Repetition]]
 
-[[https:/clojure/sidebar.clj][Over Automation]]
+[[./clojure/sidebar.clj][Over Automation]]
 
-[[https://philippe-carphin.ca/list/Users/pcarphin/Desktop/experiments][Webflow list]]
+[[./list/Users/pcarphin/Desktop/experiments][Webflow list]]
 
 
 
