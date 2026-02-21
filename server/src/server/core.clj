@@ -21,7 +21,8 @@
     ))
 
 (defn -main [] 
-  (s/run-server (app) {:port 8081}))
+  (s/run-server (app) {:port 8081})
+  (println "Started server listening on port 8081"))
 
 (defn stop-server [server]
   (server :timeout 100))
